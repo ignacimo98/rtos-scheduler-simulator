@@ -29,8 +29,6 @@ void show_maze(const char *maze, int width, int height, int maze_start_x,
               maze_start_x + x * square_side + square_side,
               maze_start_y + y * square_side + square_side, bg);
           break;
-        case 2:
-          break;
         default:
           break;
       }
@@ -82,11 +80,17 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < alien_amount; ++i) {
     initialize_alien(&aliens[i], 10, 0, 2);
   }
+
   al_init_primitives_addon();
-  al_init_ttf_addon();
+
   al_init_font_addon();
 
+  al_init_ttf_addon();
+
+
   if (al_init()) {
+    font = al_load_ttf_font("graphic/roboto.ttf", 24, 0);
+
     timer = al_create_timer(1.0 / FPS);
     display = al_create_display(screen_width, screen_height);
     al_install_keyboard();
@@ -129,13 +133,16 @@ int main(int argc, char *argv[]) {
             case ALLEGRO_KEY_D: {
               x += square_side;
             } break;
-            default:
-              // does nothing
-              break;
+            default: {
+              directions available_directions = get_available_directions(
+                  maze, maze_width, maze_height, aliens[0].x, aliens[0].y);
+              move_alien(&aliens[0], available_directions);
+            }
+            // does nothing
+            break;
           }
         } break;
         default:
-          // does nothing ?
           break;
       }
 
@@ -151,7 +158,7 @@ int main(int argc, char *argv[]) {
         show_aliens(aliens, graphic_maze_start_x, graphic_maze_start_y,
                     square_side);
 
-        font = al_load_ttf_font("graphic/roboto.ttf", 24, 0);
+        
         al_draw_text(font, al_map_rgba(255, 255, 255, 0), 100, 10,
                      ALLEGRO_ALIGN_RIGHT, "ENERGY: ");
 

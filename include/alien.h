@@ -1,5 +1,7 @@
 #include <stdlib.h>
 
+#include "maze.h"
+
 typedef struct alien
 {
   int x, y;
@@ -9,5 +11,6 @@ typedef struct alien
 } alien;
 
 void initialize_alien(alien* alien, int period, int creation_time, int energy);
+void move_alien(alien* alien, directions available_directions);
 
 
