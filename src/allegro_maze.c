@@ -1,5 +1,7 @@
 #include <allegro5/allegro.h>
+#include <allegro5/allegro_font.h>
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_ttf.h>
 #include <stdio.h>
 
 #include "alien.h"
@@ -9,13 +11,15 @@ const real32 FPS = 60.0f;
 const int32 screen_width = 800;
 const int32 screen_height = 800;
 const real32 move_speed = 2.0f;
+
 const int alien_amount = 5;
+ALLEGRO_COLOR bg;
 
 /* Display the maze. */
 void show_maze(const char *maze, int width, int height, int maze_start_x,
                int maze_start_y, int square_side) {
   int x, y;
-  ALLEGRO_COLOR bg = al_map_rgba_f(1.0f, 1.0f, 1.0f, 0);
+  bg = al_map_rgba_f(1.0f, 1.0f, 1.0f, 0);
   for (y = 0; y < height; y++) {
     for (x = 0; x < width; x++) {
       switch (maze[y * width + x]) {
@@ -52,6 +56,7 @@ int main(int argc, char *argv[]) {
   ALLEGRO_DISPLAY *display = NULL;
   ALLEGRO_EVENT_QUEUE *event_queue = NULL;
   ALLEGRO_TIMER *timer = NULL;
+  ALLEGRO_FONT *font = NULL;
   bool32 running = 1;
   bool32 redraw = 1;
 
@@ -78,6 +83,8 @@ int main(int argc, char *argv[]) {
     initialize_alien(&aliens[i], 10, 0, 2);
   }
   al_init_primitives_addon();
+  al_init_ttf_addon();
+  al_init_font_addon();
 
   if (al_init()) {
     timer = al_create_timer(1.0 / FPS);
@@ -134,14 +141,27 @@ int main(int argc, char *argv[]) {
 
       if (redraw && al_is_event_queue_empty(event_queue)) {
         redraw = 0;
+
         al_clear_to_color(al_map_rgb(0, 0, 0));
-        ALLEGRO_COLOR bg = al_map_rgba_f(1.0f, 1.0f, 1.0f, 0.5f);
+        bg = al_map_rgba_f(1.0f, 1.0f, 1.0f, 0.5f);
         al_draw_filled_rectangle(x, y, x + square_side, y + square_side, bg);
 
         show_maze(maze, maze_width, maze_height, graphic_maze_start_x,
                   graphic_maze_start_y, square_side);
         show_aliens(aliens, graphic_maze_start_x, graphic_maze_start_y,
                     square_side);
+
+        font = al_load_ttf_font("graphic/roboto.ttf", 24, 0);
+        al_draw_text(font, al_map_rgba(255, 255, 255, 0), 100, 10,
+                     ALLEGRO_ALIGN_RIGHT, "ENERGY: ");
+
+        // Draw energy indicator
+        bg = al_map_rgba(255, 255, 255, 255);
+        al_draw_filled_rectangle(100, 10, 300, 30, bg);
+
+        bg = al_map_rgba(247, 243, 7, 255);
+        al_draw_filled_rectangle(101, 11, 299, 29, bg);
+
         al_flip_display();
 
         x = x >= screen_width ? 0 : x;
@@ -149,6 +169,7 @@ int main(int argc, char *argv[]) {
       }
     }
 
+    // al_destroy_font(font);
     al_destroy_timer(timer);
     al_destroy_display(display);
     al_destroy_event_queue(event_queue);

@@ -1,3 +1,4 @@
+
 SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin
@@ -9,7 +10,7 @@ OBJ := $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 CPPFLAGS := -Iinclude -MMD -MP
 CFLAGS   := -Wall
 LDFLAGS  := -Llib
-LDLIBS   := -lallegro -lallegro_primitives -lallegro_main 
+LDLIBS   := -lallegro -lallegro_primitives -lallegro_main -lallegro_font -lallegro_ttf
 
 .PHONY: all clean
 
