@@ -143,6 +143,8 @@ int main(int argc, char *argv[]) {
         redraw = 0;
 
         al_clear_to_color(al_map_rgb(0, 0, 0));
+
+        //_________ Maze Draw _________
         bg = al_map_rgba_f(1.0f, 1.0f, 1.0f, 0.5f);
         al_draw_filled_rectangle(x, y, x + square_side, y + square_side, bg);
 
@@ -151,9 +153,15 @@ int main(int argc, char *argv[]) {
         show_aliens(aliens, graphic_maze_start_x, graphic_maze_start_y,
                     square_side);
 
+        //_________ Info Draw _________
+        
+        //Separation Line
+        bg = al_map_rgba(255, 255, 255, 0);
+        al_draw_line(maze_width*square_side+40, 15, maze_width*square_side+40, maze_width*square_side+15, bg, 2);
+        
         font = al_load_ttf_font("graphic/roboto.ttf", 24, 0);
-        al_draw_text(font, al_map_rgba(255, 255, 255, 0), 100, 10,
-                     ALLEGRO_ALIGN_RIGHT, "ENERGY: ");
+        al_draw_text(font, al_map_rgba(255, 255, 255, 0), maze_width*square_side+50, 10,
+                     ALLEGRO_ALIGN_LEFT, "ENERGY: ");
 
         // Draw energy indicator
         bg = al_map_rgba(255, 255, 255, 255);
@@ -162,6 +170,7 @@ int main(int argc, char *argv[]) {
         bg = al_map_rgba(247, 243, 7, 255);
         al_draw_filled_rectangle(101, 11, 299, 29, bg);
 
+        //_________ Display ___________
         al_flip_display();
 
         x = x >= screen_width ? 0 : x;
