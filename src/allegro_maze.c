@@ -10,11 +10,12 @@ const real32 FPS = 60.0f;
 const int32 screen_width = 800;
 const int32 screen_height = 600;
 const real32 move_speed = 2.0f;
+ALLEGRO_COLOR bg;
 
 /* Display the maze. */
 void ShowMaze(const char *maze, int width, int height) {
   int x, y;
-  ALLEGRO_COLOR bg = al_map_rgba_f(1.0f, 1.0f, 1.0f, 0);
+  bg = al_map_rgba_f(1.0f, 1.0f, 1.0f, 0);
   for (y = 0; y < height; y++) {
     for (x = 0; x < width; x++) {
       switch (maze[y * width + x]) {
@@ -35,6 +36,7 @@ int main(int argc, char *argv[]) {
   ALLEGRO_DISPLAY *display = NULL;
   ALLEGRO_EVENT_QUEUE *event_queue = NULL;
   ALLEGRO_TIMER *timer = NULL;
+  ALLEGRO_FONT *font = NULL;
   bool32 running = 1;
   bool32 redraw = 1;
 
@@ -118,22 +120,25 @@ int main(int argc, char *argv[]) {
         //Erase (?)
         al_clear_to_color(al_map_rgb(0,0,0));
 
-        ALLEGRO_FONT *font = al_load_font ("font.ttf" , 24 , 0);
-        al_draw_text(font , al_map_rgb(255 , 0 , 255) , 200 , 10 , 0   , "ENERGY: ");
+       
+        font = al_load_ttf_font ("graphic/roboto.ttf" , 24,0);
+        al_draw_text(font, al_map_rgba(255,255,255,0) , 100 , 10 , ALLEGRO_ALIGN_RIGHT , "ENERGY: ");
 
         //Draw energy indicator
-        ALLEGRO_COLOR bg = al_map_rgba_f(167.0f,167.0f,167.0f,0);
-        al_draw_filled_rectangle(300, 10, 100, 30, bg);
-        
-        bg = al_map_rgba_f(1.0f,1.0f,1.0f,0);
-        al_draw_filled_rectangle(x, y, x+30, y+30, bg);
-        
-        //Dibuja en pantalla
-        al_clear_to_color(al_map_rgb(0, 0, 0));
+        bg = al_map_rgba(255,255,255,255);
+        al_draw_filled_rectangle(100, 10, 300, 30, bg);
+
+        bg = al_map_rgba(247,243,7,255);
+        al_draw_filled_rectangle(101, 11, 299, 29, bg);
+
+    
+        //Draw
         bg = al_map_rgba_f(1.0f, 1.0f, 1.0f, 0);
         al_draw_filled_rectangle(x, y, x + square_side, y + square_side, bg);
         
         // ShowMaze(maze, maze_width, maze_height);
+        
+        //Draw everything on Screen
         al_flip_display();
 
         x = x >= screen_width ? 0 : x;
@@ -141,6 +146,7 @@ int main(int argc, char *argv[]) {
       }
     }
 
+    //al_destroy_font(font);
     al_destroy_timer(timer);
     al_destroy_display(display);
     al_destroy_event_queue(event_queue);
