@@ -2,22 +2,28 @@
 #include <allegro5/allegro_primitives.h>
 #include <stdio.h>
 
+#include "alien.h"
 #include "maze.h"
 
 const real32 FPS = 60.0f;
 const int32 screen_width = 800;
-const int32 screen_height = 600;
+const int32 screen_height = 800;
 const real32 move_speed = 2.0f;
+const int alien_amount = 5;
 
 /* Display the maze. */
-void ShowMaze(const char *maze, int width, int height) {
+void show_maze(const char *maze, int width, int height, int maze_start_x,
+               int maze_start_y, int square_side) {
   int x, y;
   ALLEGRO_COLOR bg = al_map_rgba_f(1.0f, 1.0f, 1.0f, 0);
   for (y = 0; y < height; y++) {
     for (x = 0; x < width; x++) {
       switch (maze[y * width + x]) {
         case 1:
-          al_draw_filled_rectangle(x*10, y*10, x+10 + 10, y+10 + 10, bg);
+          al_draw_filled_rectangle(
+              maze_start_x + x * square_side, maze_start_y + y * square_side,
+              maze_start_x + x * square_side + square_side,
+              maze_start_y + y * square_side + square_side, bg);
           break;
         case 2:
           break;
@@ -28,23 +34,39 @@ void ShowMaze(const char *maze, int width, int height) {
     // printf("\n");
   }
 }
+void show_aliens(alien aliens[], int maze_start_x, int maze_start_y,
+                 int square_side) {
+  ALLEGRO_COLOR bg = al_map_rgba_f(1.0f, 1.0f, 1.0f, 0);
+  for (int i = 0; i < alien_amount; ++i) {
+    bg = al_map_rgb_f(aliens[i].r, aliens[i].g, aliens[i].b);
+    al_draw_filled_rectangle(
+        maze_start_x + aliens[i].x * square_side,
+        maze_start_y + aliens[i].y * square_side,
+        maze_start_x + aliens[i].x * square_side + square_side,
+        maze_start_y + aliens[i].y * square_side + square_side, bg);
+  }
+}
 
 int main(int argc, char *argv[]) {
+  alien aliens[alien_amount];
   ALLEGRO_DISPLAY *display = NULL;
   ALLEGRO_EVENT_QUEUE *event_queue = NULL;
   ALLEGRO_TIMER *timer = NULL;
   bool32 running = 1;
   bool32 redraw = 1;
 
-  int32 square_side = 10;
+  int32 square_side = 20;
+
+  int32 graphic_maze_start_x = 15;
+  int32 graphic_maze_start_y = 15;
 
   int32 x = 10;
   int32 y = 10;
 
   int maze_width, maze_height;
   char *maze;
-  maze_width = 21;
-  maze_height = 21;
+  maze_width = 31;
+  maze_height = 31;
   /* Allocate the maze array. */
   maze = (char *)malloc(maze_width * maze_height * sizeof(char));
   if (maze == NULL) {
@@ -52,7 +74,9 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
   GenerateMaze(maze, maze_width, maze_height);
-
+  for (int i = 0; i < alien_amount; ++i) {
+    initialize_alien(&aliens[i], 10, 0, 2);
+  }
   al_init_primitives_addon();
 
   if (al_init()) {
@@ -111,10 +135,13 @@ int main(int argc, char *argv[]) {
       if (redraw && al_is_event_queue_empty(event_queue)) {
         redraw = 0;
         al_clear_to_color(al_map_rgb(0, 0, 0));
-        ALLEGRO_COLOR bg = al_map_rgba_f(1.0f, 1.0f, 1.0f, 0);
+        ALLEGRO_COLOR bg = al_map_rgba_f(1.0f, 1.0f, 1.0f, 0.5f);
         al_draw_filled_rectangle(x, y, x + square_side, y + square_side, bg);
-        
-        // ShowMaze(maze, maze_width, maze_height);
+
+        show_maze(maze, maze_width, maze_height, graphic_maze_start_x,
+                  graphic_maze_start_y, square_side);
+        show_aliens(aliens, graphic_maze_start_x, graphic_maze_start_y,
+                    square_side);
         al_flip_display();
 
         x = x >= screen_width ? 0 : x;
