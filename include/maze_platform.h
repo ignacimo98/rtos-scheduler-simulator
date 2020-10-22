@@ -1,4 +1,4 @@
-#if !defined(MAZE_PLATFORM_H)
+#ifndef MAZE_PLATFORM_H
 #define MAZE_PLATFORM_H
 
 #include <stdint.h>
