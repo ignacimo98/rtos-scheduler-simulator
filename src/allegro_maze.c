@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
+
 
 const real32 FPS = 60.0f;
 const int32 screen_width = 800;
@@ -21,6 +24,8 @@ int main(int argc, char *argv[]) {
   int32 y = 10;
   
   al_init_primitives_addon();
+  al_init_ttf_addon();
+  al_init_font_addon();
 
   if (al_init()) {
 
@@ -85,9 +90,26 @@ int main(int argc, char *argv[]) {
 
       if(redraw && al_is_event_queue_empty(event_queue)) {
         redraw = 0;
+
+        //Erase (?)
         al_clear_to_color(al_map_rgb(0,0,0));
+
+        //Draw text
+        //al_init_font_addon();
+        //al_init_ttf_addon();
+
+        ALLEGRO_FONT *font = al_load_font ("font.ttf" , 24 , 0);
+        al_draw_text(font , al_map_rgb(255 , 0 , 255) , 200 , 10 , 0   , "ENERGY: ");
+
+        //Draw energy indicator
+        ALLEGRO_COLOR bg1 = al_map_rgba_f(167.0f,167.0f,167.0f,0);
+        al_draw_filled_rectangle(300, 10, 100, 30, bg1);
+        
+        
         ALLEGRO_COLOR bg = al_map_rgba_f(1.0f,1.0f,1.0f,0);
         al_draw_filled_rectangle(x, y, x+30, y+30, bg);
+        
+        //Dibuja en pantalla
         al_flip_display();
 
         x = x >= screen_width ? 0 : x;
