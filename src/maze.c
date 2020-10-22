@@ -77,11 +77,13 @@ directions get_available_directions(char *maze, int width, int height, int x,
     result.down = 1;
     result.left = 0;
     result.right = 0;
+
     return result;
   }
   result.up = !maze[(y - 1) * width + x];
   result.down = !maze[(y + 1) * width + x];
   result.left = !maze[y * width + x - 1];
   result.right = !maze[y * width + x + 1];
+
   return result;
 }

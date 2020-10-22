@@ -8,7 +8,7 @@ SRC := $(wildcard $(SRC_DIR)/*.c)
 OBJ := $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
 CPPFLAGS := -Iinclude -MMD -MP
-CFLAGS   := -Wall
+CFLAGS   := -Wall -g
 LDFLAGS  := -Llib
 LDLIBS   := -lallegro -lallegro_primitives -lallegro_main -lallegro_font -lallegro_ttf
 
