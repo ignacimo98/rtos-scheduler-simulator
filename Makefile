@@ -1,9 +1,4 @@
 
-FLAGS=-Wall -g
-CC=gcc
-all:
-	$(CC) ${FLAGS} src/allegro_maze.c -o bin/maze -lallegro -lallegro_primitives -lallegro_main -lallegro_font -lallegro_ttf
-
 SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin
