@@ -12,7 +12,7 @@ const int32 screen_width = 965;
 const int32 screen_height = 800;
 const real32 move_speed = 2.0f;
 
-const int alien_amount = 5;
+const int alien_amount = 42;
 ALLEGRO_COLOR bg;
 
 /* Display the maze. */
@@ -63,12 +63,15 @@ int main(int argc, char *argv[]) {
   int32 x = 10;
   int32 y = 10;
   int maze_width, maze_height, info_start_x, info_start_y ;
+  int info_space;
   char *maze;
 
   maze_width = 31;
   maze_height = 31;
   info_start_x = maze_width*square_side+40;
   info_start_y = 40;
+  info_space = 20;
+
 
   /* Allocate the maze array. */
   maze = (char *)malloc(maze_width * maze_height * sizeof(char));
@@ -77,6 +80,7 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
   GenerateMaze(maze, maze_width, maze_height);
+  
   for (int i = 0; i < alien_amount; ++i) {
     initialize_alien(&aliens[i], 10, 0, 2);
   }
@@ -173,16 +177,58 @@ int main(int argc, char *argv[]) {
                      ALLEGRO_ALIGN_LEFT, "Period");
 
         //Alien information deployment
-        for (int i = 0; i < 600; i+= 30){
+        
+        
+        int ypos = 0;
+        int xcol = 0;
+        int column = 0;
+        int max_rows = 19;
+        for (int i = 0; i < alien_amount; ++i) {
+          //Resize Window if needed
+          if (i == info_space){
+            al_resize_display(display,screen_width+280*(xcol),screen_height);
+            info_space+=20;
+          }
+          float r = aliens[i].r;
+          float g = aliens[i].g;
+          float b = aliens[i].b;
+          bg = al_map_rgba_f(r, g, b, 0);
+          
+          int energy = aliens[i].energy;
+          char energy_c [10];
+          sprintf(energy_c, "%d", energy);
+          int remaining_energy = aliens[i].remaining_energy;
+          char remaining_energy_c [10];
+          sprintf(remaining_energy_c, "%d", remaining_energy);
+          int period = aliens[i].period;
+          char period_c [10];
+          sprintf(period_c, "%d", period);
 
-
-          bg = al_map_rgba(255, 255, 255, 0);
-          al_draw_filled_rectangle(info_start_x+43, info_start_y+5+i, info_start_x+43+square_side, info_start_y+5+square_side+i, bg);
-          al_draw_textf(font, al_map_rgba(255, 255, 255, 0), info_start_x+130, info_start_y+i,
-                      ALLEGRO_ALIGN_CENTER, "%s/%s","2","3");
-          al_draw_textf(font, al_map_rgba(255, 255, 255, 0), info_start_x+218, info_start_y+i,
-                      ALLEGRO_ALIGN_CENTER, "%s","10");
+          al_draw_filled_rectangle(info_start_x+43+column, info_start_y+5+ypos, info_start_x+43+square_side+column, info_start_y+5+square_side+ypos, bg);
+          al_draw_textf(font, al_map_rgba(255, 255, 255, 0), info_start_x+130+column, info_start_y+ypos,
+                      ALLEGRO_ALIGN_CENTER, "%s/%s",remaining_energy_c, energy_c);
+          al_draw_textf(font, al_map_rgba(255, 255, 255, 0), info_start_x+218+column, info_start_y+ypos,
+                      ALLEGRO_ALIGN_CENTER, "%s",period_c);
+          //Check the row and create new column
+          if(i==max_rows){
+            xcol = xcol + 1;
+            column = xcol * 280;
+            ypos = 0;
+            max_rows+=20;
+            bg = al_map_rgba(255, 255, 255, 0);
+            al_draw_line(info_start_x+280+column, 15, info_start_x+280+column, maze_width*square_side+15, bg, 2);
+            al_draw_text(font, al_map_rgba(255, 255, 255, 0), info_start_x+25+column, 10,
+                     ALLEGRO_ALIGN_LEFT, "Alien");
+            al_draw_text(font, al_map_rgba(255, 255, 255, 0), info_start_x+95+column, 10,
+                     ALLEGRO_ALIGN_LEFT, "Energy");
+            al_draw_text(font, al_map_rgba(255, 255, 255, 0), info_start_x+185+column, 10,
+                     ALLEGRO_ALIGN_LEFT, "Period");
+          } else {
+            ypos += 30;
+          }
         }
+
+
         //_________ Display ___________
         al_flip_display();
 
