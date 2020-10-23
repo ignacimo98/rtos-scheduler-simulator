@@ -8,7 +8,7 @@
 #include "maze.h"
 
 const real32 FPS = 60.0f;
-const int32 screen_width = 800;
+const int32 screen_width = 965;
 const int32 screen_height = 800;
 const real32 move_speed = 2.0f;
 
@@ -57,19 +57,19 @@ int main(int argc, char *argv[]) {
   ALLEGRO_FONT *font = NULL;
   bool32 running = 1;
   bool32 redraw = 1;
-
   int32 square_side = 20;
-
   int32 graphic_maze_start_x = 15;
   int32 graphic_maze_start_y = 15;
-
   int32 x = 10;
   int32 y = 10;
-
-  int maze_width, maze_height;
+  int maze_width, maze_height, info_start_x, info_start_y ;
   char *maze;
+
   maze_width = 31;
   maze_height = 31;
+  info_start_x = maze_width*square_side+40;
+  info_start_y = 40;
+
   /* Allocate the maze array. */
   maze = (char *)malloc(maze_width * maze_height * sizeof(char));
   if (maze == NULL) {
@@ -86,7 +86,6 @@ int main(int argc, char *argv[]) {
   al_init_font_addon();
 
   al_init_ttf_addon();
-
 
   if (al_init()) {
     font = al_load_ttf_font("graphic/roboto.ttf", 24, 0);
@@ -160,21 +159,30 @@ int main(int argc, char *argv[]) {
                     square_side);
 
         //_________ Info Draw _________
-        
         //Separation Line
         bg = al_map_rgba(255, 255, 255, 0);
-        al_draw_line(maze_width*square_side+40, 15, maze_width*square_side+40, maze_width*square_side+15, bg, 2);
+        al_draw_line(info_start_x, 15, info_start_x, maze_width*square_side+15, bg, 2);
+        al_draw_line(info_start_x+280, 15, info_start_x+280, maze_width*square_side+15, bg, 2);
 
-        al_draw_text(font, al_map_rgba(255, 255, 255, 0), maze_width*square_side+50, 10,
-                     ALLEGRO_ALIGN_LEFT, "ENERGY: ");
+        //Column headers
+        al_draw_text(font, al_map_rgba(255, 255, 255, 0), info_start_x+25, 10,
+                     ALLEGRO_ALIGN_LEFT, "Alien");
+        al_draw_text(font, al_map_rgba(255, 255, 255, 0), info_start_x+95, 10,
+                     ALLEGRO_ALIGN_LEFT, "Energy");
+        al_draw_text(font, al_map_rgba(255, 255, 255, 0), info_start_x+185, 10,
+                     ALLEGRO_ALIGN_LEFT, "Period");
 
-        // Draw energy indicator
-        bg = al_map_rgba(255, 255, 255, 255);
-        al_draw_filled_rectangle(100, 10, 300, 30, bg);
+        //Alien information deployment
+        for (int i = 0; i < 600; i+= 30){
 
-        bg = al_map_rgba(247, 243, 7, 255);
-        al_draw_filled_rectangle(101, 11, 299, 29, bg);
 
+          bg = al_map_rgba(255, 255, 255, 0);
+          al_draw_filled_rectangle(info_start_x+43, info_start_y+5+i, info_start_x+43+square_side, info_start_y+5+square_side+i, bg);
+          al_draw_textf(font, al_map_rgba(255, 255, 255, 0), info_start_x+130, info_start_y+i,
+                      ALLEGRO_ALIGN_CENTER, "%s/%s","2","3");
+          al_draw_textf(font, al_map_rgba(255, 255, 255, 0), info_start_x+218, info_start_y+i,
+                      ALLEGRO_ALIGN_CENTER, "%s","10");
+        }
         //_________ Display ___________
         al_flip_display();
 
