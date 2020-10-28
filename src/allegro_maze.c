@@ -49,7 +49,14 @@ void show_aliens(alien aliens[], int maze_start_x, int maze_start_y,
   }
 }
 
+void execute_step(alien aliens[], const char *maze, int maze_width, int maze_height){
+  directions available_directions = get_available_directions(
+                  maze, maze_width, maze_height, aliens[0].x, aliens[0].y);
+              move_alien(&aliens[0], available_directions);
+}
+
 int main(int argc, char *argv[]) {
+  int frames = 0;
   alien aliens[alien_amount];
   ALLEGRO_DISPLAY *display = NULL;
   ALLEGRO_EVENT_QUEUE *event_queue = NULL;
@@ -115,6 +122,12 @@ int main(int argc, char *argv[]) {
         } break;
         case ALLEGRO_EVENT_TIMER: {
           redraw = 1;
+          frames++;
+          if (frames >= 30){
+            frames = 0;
+            execute_step(aliens, maze, maze_width, maze_height);
+          }
+
         } break;
         // case ALLEGRO_EVENT_KEY_CHAR: // fall through
         // case ALLEGRO_EVENT_KEY_UP:   // fall through
@@ -132,11 +145,7 @@ int main(int argc, char *argv[]) {
             case ALLEGRO_KEY_D: {
               x += square_side;
             } break;
-            default: {
-              directions available_directions = get_available_directions(
-                  maze, maze_width, maze_height, aliens[0].x, aliens[0].y);
-              move_alien(&aliens[0], available_directions);
-            }
+            default: 
             // does nothing
             break;
           }

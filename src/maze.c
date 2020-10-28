@@ -69,7 +69,7 @@ void GenerateMaze(char *maze, int width, int height) {
   maze[0 * width + 1] = 0;
   maze[(height - 1) * width + (width - 2)] = 0;
 }
-directions get_available_directions(char *maze, int width, int height, int x,
+directions get_available_directions(const char *maze, int width, int height, int x,
                                     int y) {
   directions result;
   if (y == 0 && x == 1) {

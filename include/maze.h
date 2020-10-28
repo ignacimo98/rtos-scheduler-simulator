@@ -18,7 +18,7 @@ typedef struct directions
 /* Generate maze in matrix maze with size width, height. */
 void GenerateMaze(char *maze, int width, int height);
 
-directions get_available_directions(char* maze, int width, int height, int x,
+directions get_available_directions(const char* maze, int width, int height, int x,
                                     int y);
 
 #endif
