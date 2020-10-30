@@ -16,6 +16,21 @@ const real32 move_speed = 2.0f;
 const int alien_amount = 42;
 ALLEGRO_COLOR bg;
 
+void button_action_switch(int *manual){
+  if (*manual == 1) *manual = 0;
+  else *manual = 1;
+}
+void button_action_add(){
+  //oh lord please do something
+}
+void button_action_start(int *running){
+  if (*running == 1) *running = 0;
+  else *running = 1;
+}
+void button_action_restart(){
+  //cmon you too?
+}
+
 /* Display the maze. */
 void show_maze(const char *maze, int width, int height, int maze_start_x,
                int maze_start_y, int square_side) {
@@ -104,7 +119,6 @@ void show_toolbar(toolbar_info toolbar, ALLEGRO_FONT *font,
               toolbar.ycoord_reset, toolbar.button_width, toolbar.button_height-20);
 }
 
-
 void show_aliens(alien aliens[], int maze_start_x, int maze_start_y,
                  int square_side) {
   ALLEGRO_COLOR bg = al_map_rgba_f(1.0f, 1.0f, 1.0f, 0);
@@ -118,14 +132,54 @@ void show_aliens(alien aliens[], int maze_start_x, int maze_start_y,
   }
 }
 
-void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state){
-  //Mouse Click
-  if(al_mouse_button_down(&mouse_state,1)){
-    int mouse_x = mouse_state.x;
-    int mouse_y = mouse_state.y;
-    //printf("mouse in %d\n",mouse_x);
-    if (mouse_x >= 100 && mouse_x <=120 && mouse_y >= 700 && mouse_y <=720){
-      printf("Button pressed\n");
+void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar, 
+                      int *click_wait, int *running, int *manual){
+
+  if(*click_wait == 0){
+    if(al_mouse_button_down(&mouse_state,1)){
+      *click_wait = 1;
+      //  Mouse Clicked.
+      int mouse_x = mouse_state.x;
+      int mouse_y = mouse_state.y;
+      //printf("mouse in %d\n",mouse_x);
+
+      //_____ Check if a button had been clicked: ____
+      //Check Switch Button:
+      if (mouse_x >= toolbar.x_base 
+        && mouse_y >= toolbar.ycoord_switch 
+        && mouse_x <=toolbar.x_base + toolbar.button_width  
+        && mouse_y <= toolbar.ycoord_switch+toolbar.button_height){
+          printf("SWITCH Button pressed\n");
+          button_action_switch(manual);
+      }
+      //Check Add Button:
+      if (mouse_x >= toolbar.x_base 
+        && mouse_y >= toolbar.ycoord_add
+        && mouse_x <=toolbar.x_base + toolbar.button_width  
+        && mouse_y <= toolbar.ycoord_add+toolbar.button_height){
+          printf("Add Button pressed\n");
+          button_action_add();
+        }
+      //Check Start/Stop Button:
+      if (mouse_x >= toolbar.x_base 
+        && mouse_y >= toolbar.ycoord_start
+        && mouse_x <=toolbar.x_base + toolbar.button_width  
+        && mouse_y <= toolbar.ycoord_start+toolbar.button_height){
+          printf("Start Button pressed\n");
+          button_action_start(running);
+        }
+      //Check Reset Button:
+      if (mouse_x >= toolbar.x_base 
+        && mouse_y >= toolbar.ycoord_reset
+        && mouse_x <=toolbar.x_base + toolbar.button_width  
+        && mouse_y <= toolbar.ycoord_reset+toolbar.button_height-20){
+          printf("Restart Button pressed\n");
+          button_action_restart();
+        }
+    }
+  } else {
+    if(!al_mouse_button_down(&mouse_state,1)){
+      *click_wait=0;
     }
   }
 }
@@ -216,7 +270,6 @@ void execute_step(alien aliens[], const char *maze, int maze_width,
 }
 
 int main(int argc, char *argv[]) {
-  int frames = 0;
   alien aliens[alien_amount];
   toolbar_info toolbar;
   ALLEGRO_DISPLAY *display = NULL;
@@ -227,26 +280,25 @@ int main(int argc, char *argv[]) {
   bool32 running = 1;
   bool32 manual = 1; 
   bool32 redraw = 1;
-
+  int32 x = 10;
+  int32 y = 10;
+  int frames = 0;
   int toolbar_width = 200;
-
   int square_side = 20;
   int graphic_maze_start_x = toolbar_width + 15;
   int graphic_maze_start_y = 15;
-  int32 x = 10;
-  int32 y = 10;
-
   int maze_width, maze_height, info_start_x, info_start_y;
   int info_space;
+  int click_wait = 0;
   char *maze;
-
   maze_width = 31;
   maze_height = 31;
   info_start_x = graphic_maze_start_x + maze_width * square_side + 40;
   info_start_y = 40;
   info_space = 20;
+  
 
-  /* Allocate the maze array. */
+  //  Allocate the maze array.
   maze = (char *)malloc(maze_width * maze_height * sizeof(char));
   if (maze == NULL) {
     printf("error: not enough memory\n");
@@ -257,7 +309,7 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < alien_amount; ++i) {
     initialize_alien(&aliens[i], 10, 0, 2);
   }
-  //initialize toolbar info
+  //  Initialize toolbar info.
   initialize_toolbar(&toolbar);
 
   al_init_primitives_addon();
@@ -272,7 +324,7 @@ int main(int argc, char *argv[]) {
     al_install_keyboard();
     al_install_mouse();
 
-    // register events
+    // Register events.
     al_register_event_source(event_queue, al_get_display_event_source(display));
     al_register_event_source(event_queue, al_get_timer_event_source(timer));
     al_register_event_source(event_queue, al_get_keyboard_event_source());
@@ -324,19 +376,20 @@ int main(int argc, char *argv[]) {
           break;
       }
 
-      //Check the mouse state
+      //  Check the mouse state.
       al_get_mouse_state(&mouse_state);
-      check_mouse_click(mouse_state);
+      check_mouse_click(mouse_state, toolbar, &click_wait, &running, &manual);
 
       if (redraw && al_is_event_queue_empty(event_queue)) {
         redraw = 0;
 
+        //  _________ Erase All ________
         al_clear_to_color(al_map_rgb(0, 0, 0));
         
-        // ________ Show Toolbar ______
+        //  ________ Show Toolbar ______
         show_toolbar(toolbar, font, maze_width, square_side, manual, running);
 
-        //_________ Maze Draw _________
+        //  _________ Maze Draw _________
         // bg = al_map_rgba_f(1.0f, 1.0f, 1.0f, 0.5f);
         // al_draw_filled_rectangle(x, y, x + square_side, y + square_side, bg);
 
@@ -345,12 +398,12 @@ int main(int argc, char *argv[]) {
         show_aliens(aliens, graphic_maze_start_x, graphic_maze_start_y,
                     square_side);
 
-        // _________ Info Draw _________
+        //  _________ Info Draw _________
         show_alien_info(aliens, info_start_x, info_start_y, maze_width,
                         square_side, &info_space, display, font);
         
 
-        //_________ Display ___________
+        //  __________ Display ___________
         al_flip_display();
       }
     }
