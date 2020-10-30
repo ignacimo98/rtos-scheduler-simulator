@@ -38,17 +38,73 @@ void show_maze(const char *maze, int width, int height, int maze_start_x,
   }
 }
 
-void show_toolbar(ALLEGRO_DISPLAY *display, ALLEGRO_FONT *font, int toolbar_width, int maze_width, int square_side){
+void show_toolbar(toolbar_info toolbar, ALLEGRO_FONT *font, 
+                  int maze_width, int square_side, 
+                  bool32 manual, bool32 running){
   
+  //_____________DRAW VERTICAL LINE
   bg = al_map_rgba(255, 255, 255, 0);
-  al_draw_line(toolbar_width, 15, toolbar_width, maze_width * square_side + 15,
-               bg, 2);
+  al_draw_line(toolbar.toolbar_width, 15, toolbar.toolbar_width, 
+              maze_width * square_side + 15,bg, 2);
+ 
+  //_____________DRAW MODE
+  al_draw_text(font, al_map_rgba(255, 255, 255, 0), toolbar.x_base, toolbar.y_base,
+               ALLEGRO_ALIGN_LEFT, "Mode:");
+  if (manual == 1){
+    al_draw_text(font, al_map_rgba(255, 255, 255, 0), toolbar.x_base+80, toolbar.y_base,
+               ALLEGRO_ALIGN_LEFT, "Manual");
+  }else{
+    al_draw_text(font, al_map_rgba(255, 255, 255, 0), toolbar.x_base+80, toolbar.y_base,
+               ALLEGRO_ALIGN_LEFT, "Auto");
+  }
+  //_____________DRAW SWITCH BUTTON
+  draw_button(font, al_map_rgba(100, 100, 255, 255), "SWITCH", toolbar.x_base, 
+              toolbar.ycoord_switch, toolbar.button_width, toolbar.button_height);
 
-  draw_button(font, al_map_rgba_f(0.2f, 0.0f, 0.5f, 0), "caca", 10, 10, 90, 40);
-  draw_button(font, al_map_rgba_f(0.5f, 0.0f, 0.2f, 0), "caca1", 100, 10, 90, 40);
+  //_____________DRAW SEPARATION LINE 1
+  bg = al_map_rgba(255, 255, 255, 0);
+  al_draw_line(toolbar.x_base,toolbar.y_base+110,toolbar.toolbar_width -20,
+              toolbar.y_base+110,bg,2);
 
+  //_____________NEW ALIEN INPUTS AND ADD BUTTON
+  al_draw_text(font, al_map_rgba(255, 255, 255, 0), toolbar.x_base+5, toolbar.y_base+130,
+               ALLEGRO_ALIGN_LEFT, "- NEW ALIEN -");
+  al_draw_text(font, al_map_rgba(255, 255, 255, 0), toolbar.x_base, toolbar.y_base+170,
+               ALLEGRO_ALIGN_LEFT, "ENERGY:");
+  al_draw_text(font, al_map_rgba(255, 255, 255, 0), toolbar.x_base, toolbar.ycoord_input1,
+               ALLEGRO_ALIGN_LEFT, "-- input1 --");
+  al_draw_text(font, al_map_rgba(255, 255, 255, 0), toolbar.x_base, toolbar.y_base+270,
+               ALLEGRO_ALIGN_LEFT, "PERIOD:");
+  al_draw_text(font, al_map_rgba(255, 255, 255, 0), toolbar.x_base, toolbar.ycoord_input2,
+               ALLEGRO_ALIGN_LEFT, "-- input2 --");
+  draw_button(font, al_map_rgba(100, 100, 255, 255), "+", toolbar.x_base, 
+              toolbar.ycoord_add,toolbar.button_width, toolbar.button_height);
 
+  //_____________DRAW SEPARATION LINE 2
+  bg = al_map_rgba(255, 255, 255, 0);
+  al_draw_line(toolbar.x_base,toolbar.y_base+450,toolbar.toolbar_width -20,
+              toolbar.y_base+450,bg,2);
+
+  //_____________DRAW START/STOP BUTTON
+  if (running){
+    draw_button(font, al_map_rgba(247, 7, 30, 255), "STOP", toolbar.x_base, 
+                toolbar.ycoord_start, toolbar.button_width, toolbar.button_height);
+  }else{
+    draw_button(font, al_map_rgba(72, 237, 11, 255), "START", toolbar.x_base, 
+                toolbar.ycoord_start, toolbar.button_width, toolbar.button_height);
+  }
+
+  //_____________DRAW SEPARATION LINE 3
+  bg = al_map_rgba(255, 255, 255, 0);
+  al_draw_line(toolbar.x_base,toolbar.y_base+574,toolbar.toolbar_width -20,
+              toolbar.y_base+574,bg,2);
+
+  //_____________DRAW RESET BUTTON
+  draw_button(font, al_map_rgba(247, 7, 30, 255), "RESET", toolbar.x_base, 
+              toolbar.ycoord_reset, toolbar.button_width, toolbar.button_height-20);
 }
+
+
 void show_aliens(alien aliens[], int maze_start_x, int maze_start_y,
                  int square_side) {
   ALLEGRO_COLOR bg = al_map_rgba_f(1.0f, 1.0f, 1.0f, 0);
@@ -59,6 +115,18 @@ void show_aliens(alien aliens[], int maze_start_x, int maze_start_y,
         maze_start_y + aliens[i].y * square_side,
         maze_start_x + aliens[i].x * square_side + square_side,
         maze_start_y + aliens[i].y * square_side + square_side, bg);
+  }
+}
+
+void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state){
+  //Mouse Click
+  if(al_mouse_button_down(&mouse_state,1)){
+    int mouse_x = mouse_state.x;
+    int mouse_y = mouse_state.y;
+    //printf("mouse in %d\n",mouse_x);
+    if (mouse_x >= 100 && mouse_x <=120 && mouse_y >= 700 && mouse_y <=720){
+      printf("Button pressed\n");
+    }
   }
 }
 
@@ -150,11 +218,14 @@ void execute_step(alien aliens[], const char *maze, int maze_width,
 int main(int argc, char *argv[]) {
   int frames = 0;
   alien aliens[alien_amount];
+  toolbar_info toolbar;
   ALLEGRO_DISPLAY *display = NULL;
   ALLEGRO_EVENT_QUEUE *event_queue = NULL;
   ALLEGRO_TIMER *timer = NULL;
   ALLEGRO_FONT *font = NULL;
+  ALLEGRO_MOUSE_STATE mouse_state;
   bool32 running = 1;
+  bool32 manual = 1; 
   bool32 redraw = 1;
 
   int toolbar_width = 200;
@@ -186,19 +257,20 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < alien_amount; ++i) {
     initialize_alien(&aliens[i], 10, 0, 2);
   }
+  //initialize toolbar info
+  initialize_toolbar(&toolbar);
 
   al_init_primitives_addon();
-
   al_init_font_addon();
-
   al_init_ttf_addon();
 
   if (al_init()) {
     font = al_load_ttf_font("graphic/roboto.ttf", 24, 0);
     timer = al_create_timer(1.0 / FPS);
     display = al_create_display(screen_width, screen_height);
-    al_install_keyboard();
     event_queue = al_create_event_queue();
+    al_install_keyboard();
+    al_install_mouse();
 
     // register events
     al_register_event_source(event_queue, al_get_display_event_source(display));
@@ -252,12 +324,17 @@ int main(int argc, char *argv[]) {
           break;
       }
 
+      //Check the mouse state
+      al_get_mouse_state(&mouse_state);
+      check_mouse_click(mouse_state);
+
       if (redraw && al_is_event_queue_empty(event_queue)) {
         redraw = 0;
 
         al_clear_to_color(al_map_rgb(0, 0, 0));
+        
         // ________ Show Toolbar ______
-        show_toolbar(display, font, toolbar_width, maze_width, square_side);
+        show_toolbar(toolbar, font, maze_width, square_side, manual, running);
 
         //_________ Maze Draw _________
         // bg = al_map_rgba_f(1.0f, 1.0f, 1.0f, 0.5f);
