@@ -7,8 +7,8 @@
 #include "alien.h"
 #include "maze.h"
 #include "ui_helper.h"
+#include "scheduler.h"
 
-typedef enum algorithm { RMS, EDF } algorithm;
 
 const real32 FPS = 60.0f;
 const int32 screen_width = 1200;

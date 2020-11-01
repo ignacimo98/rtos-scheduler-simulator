@@ -1,5 +1,5 @@
-#ifndef MAZE_H
-#define MAZE_H
+#ifndef MAZE_H_
+#define MAZE_H_
 
 #include "maze_platform.h"
 
