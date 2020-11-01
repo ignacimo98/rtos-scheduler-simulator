@@ -2,4 +2,4 @@ maze
 bin
 obj
 .DS_Store
-.vscode/c_cpp_properties.json
+.vscode
