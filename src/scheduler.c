@@ -1,24 +1,30 @@
 #include "scheduler.h"
+#include <stdio.h>
 
 int deadline_check(alien aliens[], int alien_amount, int time){
+  int overflow = 0;
+  //printf("In deadline check time is: %d\n",time);
   for(int i = 0; i < alien_amount; i++){
+    //printf("Time is: %d next deadline in :%d remain energy:%d\n",time,aliens[i].next_deadline, aliens[i].remaining_energy);
     if (time == aliens[i].next_deadline){
-      if (aliens[i].energy != 0){
+      if (aliens[i].remaining_energy != 0){
         // Scheduler_Overflow!!!
-        //end exec
+        printf("OVERFLOW!!!\n");
+        overflow = 1;
       } else {
         aliens[i].next_deadline += aliens[i].period;
         aliens[i].remaining_energy = aliens[i].energy;
+        //printf("Energy restored! \n");
       }
     }
   }
+  return overflow;
 }
 
-alien* schedule_alien(alien aliens[], int alien_amount,int time, algorithm algorithm) {
+alien* schedule_alien(alien aliens[], int alien_amount, algorithm algorithm) {
   alien* to_schedule = NULL;
   
   //Check for deadlines
-
   
   int i = 0;
   for (; i < alien_amount; ++i) {
@@ -38,8 +44,11 @@ alien* schedule_alien(alien aliens[], int alien_amount,int time, algorithm algor
     }
   } else {
     // ___________ EDF Scheduler __________
-
-
+    for (; i < alien_amount; i++) {
+      if (aliens[i].next_deadline < to_schedule->next_deadline && aliens[i].remaining_energy > 0){
+        to_schedule = &(aliens[i]);
+      }
+    }
   }
   return to_schedule;
 }
