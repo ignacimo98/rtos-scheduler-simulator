@@ -334,10 +334,12 @@ void handle_keyboard_press(ALLEGRO_EVENT event, input_box currently_selected,
 }
 
 void execute_step(alien aliens[], const char *maze, int maze_width,
-                  int maze_height) {
+                  int maze_height, algorithm current_algorithm) {
+  alien *current_alien = schedule_alien(aliens, alien_amount, current_algorithm);
   directions available_directions = get_available_directions(
-      maze, maze_width, maze_height, aliens[0].x, aliens[0].y);
-  move_alien(&aliens[0], available_directions);
+      maze, maze_width, maze_height, current_alien->x, current_alien->y);
+  move_alien(current_alien, available_directions);
+  current_alien->remaining_energy--;
 }
 
 int main(int argc, char *argv[]) {
@@ -420,7 +422,7 @@ int main(int argc, char *argv[]) {
           frames++;
           if (frames >= 30) {
             frames = 0;
-            execute_step(aliens, maze, maze_width, maze_height);
+            execute_step(aliens, maze, maze_width, maze_height, current_algorithm);
           }
 
         } break;
