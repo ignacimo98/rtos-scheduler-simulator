@@ -5,6 +5,7 @@ void initialize_alien(alien* alien, int period, int creation_time, int energy) {
   alien->y = 0;
   alien->period = period;
   alien->creation_time = creation_time;
+  alien->next_deadline = period + creation_time;
   alien->energy = energy;
   alien->remaining_energy = energy;
   alien->r = (float)rand() / (float)RAND_MAX;

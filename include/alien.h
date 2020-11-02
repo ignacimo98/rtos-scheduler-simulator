@@ -9,7 +9,7 @@ typedef struct alien
 {
   int x, y;
   float r, g, b;
-  int period, creation_time, energy, remaining_energy;
+  int period, creation_time, energy, remaining_energy, next_deadline;
 
 } alien;
 
