@@ -247,6 +247,13 @@ void show_aliens(alien aliens[], int maze_start_x, int maze_start_y,
   }
 }
 
+void show_overflow(ALLEGRO_FONT *font, int overflow){
+  if (overflow){
+  al_draw_text(font, al_map_rgba(255, 0, 0, 0), 215,
+        670, ALLEGRO_ALIGN_LEFT, "OVERFLOW!: Processes cannot be scheduled, execution finished");
+  }
+}
+
 void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
                        int *click_wait, int *running, int *manual,
                        algorithm *current_algorithm,
@@ -342,14 +349,16 @@ void handle_keyboard_press(ALLEGRO_EVENT event, input_box currently_selected,
   }
 }
 
-void execute_step(alien aliens[],int time, const char *maze, int maze_width,
+
+int execute_step(alien aliens[],int time, const char *maze, int maze_width,
                   int maze_height, algorithm current_algorithm) {
-  
+  int state = 1; 
   // Check for deadlines, overflow and restore energy (1 = overflow)
   int scheduler_overflow = deadline_check(aliens, alien_amount, time);
 
   if (scheduler_overflow == 1){
     //Terminate Execution!!!
+    state = -1;
   } else {
     // Find alien to move
     alien *current_alien = schedule_alien(aliens, alien_amount, current_algorithm);
@@ -361,6 +370,8 @@ void execute_step(alien aliens[],int time, const char *maze, int maze_width,
       current_alien->remaining_energy--;
     }
   }
+  //State: 1 -> success, -1 -> Stop program
+  return state;
 }
 
 int main(int argc, char *argv[]) {
@@ -381,6 +392,7 @@ int main(int argc, char *argv[]) {
   int frames = 0;
   int aliens_running = 0;
   int time = 0;
+  int overflow = 0;
   int toolbar_width = 200;
   int square_side = 20;
   int graphic_maze_start_x = toolbar_width + 15;
@@ -447,7 +459,11 @@ int main(int argc, char *argv[]) {
             frames++;
             if (frames >= 30) {
               frames = 0;
-              execute_step(aliens, time, maze, maze_width, maze_height, current_algorithm);
+              if (execute_step(aliens, time, maze, maze_width, maze_height, current_algorithm) != 1){
+                //Overflow detected
+                aliens_running = 0;
+                overflow = 1;
+              }
               time+=1;
             }
           }
@@ -486,6 +502,9 @@ int main(int argc, char *argv[]) {
         
         //  _________ Time Draw _________
         show_time(time, font);
+
+        //  _________ Oveflow Alert Draw _________
+        show_overflow(font, overflow);
 
         //  _________ Info Draw _________
         show_alien_info(aliens, info_start_x, info_start_y, maze_width,
