@@ -45,11 +45,16 @@ void button_action_start(int *aliens_running) {
   else
     *aliens_running = 1;
 }
-void button_action_restart() {
-  // cmon you too?
+void button_action_restart(alien aliens[], int *aliens_running, int *overflow, int *time) {
+  for (int i = 0; i < alien_amount; i++){
+    aliens[i].status = NOT_INITIALIZED;
+  }
+  alien_amount = 0;
+  *aliens_running = 0;
+  *overflow = 0;
+  *time = 0;
 }
 
-/* Display the maze. */
 void show_maze(const char *maze, int width, int height, int maze_start_x,
                int maze_start_y, int square_side) {
   int x, y;
@@ -193,26 +198,39 @@ void show_alien_info(alien aliens[], int info_start_x, int info_start_y,
     float b = aliens[i].b;
     bg = al_map_rgba_f(r, g, b, 0);
 
-    int energy = aliens[i].energy;
-    char energy_c[10];
-    sprintf(energy_c, "%d", energy);
-    int remaining_energy = aliens[i].remaining_energy;
-    char remaining_energy_c[10];
-    sprintf(remaining_energy_c, "%d", remaining_energy);
-    int period = aliens[i].period;
-    char period_c[10];
-    sprintf(period_c, "%d", period);
-
     al_draw_filled_rectangle(info_start_x + 43 + column,
                              info_start_y + 5 + ypos,
                              info_start_x + 43 + square_side + column,
                              info_start_y + 5 + square_side + ypos, bg);
-    al_draw_textf(font, al_map_rgba(255, 255, 255, 0),
-                  info_start_x + 130 + column, info_start_y + ypos,
-                  ALLEGRO_ALIGN_CENTER, "%s/%s", remaining_energy_c, energy_c);
-    al_draw_textf(font, al_map_rgba(255, 255, 255, 0),
-                  info_start_x + 218 + column, info_start_y + ypos,
-                  ALLEGRO_ALIGN_CENTER, "%s", period_c);
+    
+    if (aliens[i].status == RUNNING){
+      int energy = aliens[i].energy;
+      char energy_c[10];
+      sprintf(energy_c, "%d", energy);
+      int remaining_energy = aliens[i].remaining_energy;
+      char remaining_energy_c[10];
+      sprintf(remaining_energy_c, "%d", remaining_energy);
+      int period = aliens[i].period;
+      char period_c[10];
+      sprintf(period_c, "%d", period);
+      al_draw_textf(font, al_map_rgba(255, 255, 255, 0),
+                    info_start_x + 130 + column, info_start_y + ypos,
+                    ALLEGRO_ALIGN_CENTER, "%s/%s", remaining_energy_c, energy_c);
+      al_draw_textf(font, al_map_rgba(255, 255, 255, 0),
+                    info_start_x + 218 + column, info_start_y + ypos,
+                    ALLEGRO_ALIGN_CENTER, "%s", period_c);
+    
+    } else if (aliens[i].status == TERMINATED){
+      al_draw_text(font, al_map_rgba(255, 255, 255, 0),
+                    info_start_x + 174 + column, info_start_y + ypos,
+                    ALLEGRO_ALIGN_CENTER, "TERMINATED");
+    }else{
+      al_draw_text(font, al_map_rgba(255, 255, 255, 0),
+                    info_start_x + 174 + column, info_start_y + ypos,
+                    ALLEGRO_ALIGN_CENTER, "NOT INITIALIZED");
+    }
+
+
     // Check the row and create new column
     if (i == max_rows) {
       xcol = xcol + 1;
@@ -258,18 +276,25 @@ void show_aliens(alien aliens[], int maze_start_x, int maze_start_y,
   }
 }
 
+void show_overflow(ALLEGRO_FONT *font, int overflow){
+  if (overflow){
+  al_draw_text(font, al_map_rgba(255, 0, 0, 0), 215,
+        670, ALLEGRO_ALIGN_LEFT, "OVERFLOW!: Processes cannot be scheduled, execution finished");
+  }
+}
+
 void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
-                       int *click_wait, int *running, int *manual,
+                       int *click_wait, int *running, int *manual, int *overflow,
                        algorithm *current_algorithm,
-                       input_box *currently_selected, int time, alien aliens[], char period[], char energy[],
+                       input_box *currently_selected, int *time, alien aliens[], char period[], char energy[],
                        char* maze, int maze_height, int maze_width) {
+
   if (*click_wait == 0) {
     if (al_mouse_button_down(&mouse_state, 1)) {
       *click_wait = 1;
       //  Mouse Clicked.
       int mouse_x = mouse_state.x;
       int mouse_y = mouse_state.y;
-      // printf("mouse in %d\n",mouse_x);
 
       //_____ Check if a button had been clicked: ____
       // Check Switch Mode Button:
@@ -307,9 +332,10 @@ void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
           mouse_x <= toolbar.x_base + toolbar.button_width &&
           mouse_y <= toolbar.ycoord_add + toolbar.button_height) {
         // printf("Add Button pressed\n");
-        
+
         if (!time || *manual)
-          button_action_add(aliens, *running, period, time, energy, maze, maze_height, maze_width);
+          button_action_add(aliens, *running, period, *time, energy, maze, maze_height, maze_width);
+
       }
       // Check Start/Stop Button:
       if (mouse_x >= toolbar.x_base && mouse_y >= toolbar.ycoord_start &&
@@ -321,9 +347,8 @@ void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
       // Check Reset Button:
       if (mouse_x >= toolbar.x_base && mouse_y >= toolbar.ycoord_reset &&
           mouse_x <= toolbar.x_base + toolbar.button_width &&
-          mouse_y <= toolbar.ycoord_reset + toolbar.button_height - 20) {
-        // printf("Restart Button pressed\n");
-        button_action_restart();
+          mouse_y <= toolbar.ycoord_reset + toolbar.button_height) {
+          button_action_restart(aliens, running ,overflow, time);
       }
     }
   } else {
@@ -358,13 +383,16 @@ void handle_keyboard_press(ALLEGRO_EVENT event, input_box currently_selected,
   }
 }
 
-void execute_step(alien aliens[], int time, const char *maze, int maze_width,
+
+int execute_step(alien aliens[],int time, const char *maze, int maze_width,
                   int maze_height, algorithm current_algorithm) {
+  int state = 1; 
   // Check for deadlines, overflow and restore energy (1 = overflow)
   int scheduler_overflow = deadline_check(aliens, alien_amount, time);
 
-  if (scheduler_overflow == 1) {
-    // Terminate Execution!!!
+  if (scheduler_overflow == 1){
+    //Terminate Execution!!!
+    state = -1;
   } else {
     // Find alien to move
     alien *current_alien =
@@ -377,6 +405,8 @@ void execute_step(alien aliens[], int time, const char *maze, int maze_width,
       current_alien->remaining_energy--;
     }
   }
+  //State: 1 -> success, -1 -> Stop program
+  return state;
 }
 
 int main(int argc, char *argv[]) {
@@ -397,6 +427,7 @@ int main(int argc, char *argv[]) {
   int frames = 0;
   int aliens_running = 0;
   int time = 0;
+  int overflow = 0;
   int toolbar_width = 200;
   int square_side = 20;
   int graphic_maze_start_x = toolbar_width + 15;
@@ -462,9 +493,13 @@ int main(int argc, char *argv[]) {
             frames++;
             if (frames >= 30) {
               frames = 0;
-              execute_step(aliens, time, maze, maze_width, maze_height,
-                           current_algorithm);
-              time += 1;
+
+              if (execute_step(aliens, time, maze, maze_width, maze_height, current_algorithm) != 1){
+                //Overflow detected
+                aliens_running = 0;
+                overflow = 1;
+              }
+              time+=1;
             }
           }
         } break;
@@ -483,7 +518,8 @@ int main(int argc, char *argv[]) {
       //  Check the mouse state.
       al_get_mouse_state(&mouse_state);
       check_mouse_click(mouse_state, toolbar, &click_wait, &aliens_running,
-                        &manual, &current_algorithm, &currently_selected, time, aliens, period_text, energy_text, maze, maze_height, maze_width);
+      &manual, &overflow, &current_algorithm, &currently_selected, &time, aliens, period_text, energy_text, maze, maze_height, maze_width);
+
 
       if (redraw && al_is_event_queue_empty(event_queue)) {
         redraw = 0;
@@ -504,6 +540,9 @@ int main(int argc, char *argv[]) {
 
         //  _________ Time Draw _________
         show_time(time, font);
+
+        //  _________ Oveflow Alert Draw _________
+        show_overflow(font, overflow);
 
         //  _________ Info Draw _________
         show_alien_info(aliens, info_start_x, info_start_y, maze_width,
