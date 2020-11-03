@@ -189,26 +189,39 @@ void show_alien_info(alien aliens[], int info_start_x, int info_start_y,
     float b = aliens[i].b;
     bg = al_map_rgba_f(r, g, b, 0);
 
-    int energy = aliens[i].energy;
-    char energy_c[10];
-    sprintf(energy_c, "%d", energy);
-    int remaining_energy = aliens[i].remaining_energy;
-    char remaining_energy_c[10];
-    sprintf(remaining_energy_c, "%d", remaining_energy);
-    int period = aliens[i].period;
-    char period_c[10];
-    sprintf(period_c, "%d", period);
-
     al_draw_filled_rectangle(info_start_x + 43 + column,
                              info_start_y + 5 + ypos,
                              info_start_x + 43 + square_side + column,
                              info_start_y + 5 + square_side + ypos, bg);
-    al_draw_textf(font, al_map_rgba(255, 255, 255, 0),
-                  info_start_x + 130 + column, info_start_y + ypos,
-                  ALLEGRO_ALIGN_CENTER, "%s/%s", remaining_energy_c, energy_c);
-    al_draw_textf(font, al_map_rgba(255, 255, 255, 0),
-                  info_start_x + 218 + column, info_start_y + ypos,
-                  ALLEGRO_ALIGN_CENTER, "%s", period_c);
+    
+    if (aliens[i].status == RUNNING){
+      int energy = aliens[i].energy;
+      char energy_c[10];
+      sprintf(energy_c, "%d", energy);
+      int remaining_energy = aliens[i].remaining_energy;
+      char remaining_energy_c[10];
+      sprintf(remaining_energy_c, "%d", remaining_energy);
+      int period = aliens[i].period;
+      char period_c[10];
+      sprintf(period_c, "%d", period);
+      al_draw_textf(font, al_map_rgba(255, 255, 255, 0),
+                    info_start_x + 130 + column, info_start_y + ypos,
+                    ALLEGRO_ALIGN_CENTER, "%s/%s", remaining_energy_c, energy_c);
+      al_draw_textf(font, al_map_rgba(255, 255, 255, 0),
+                    info_start_x + 218 + column, info_start_y + ypos,
+                    ALLEGRO_ALIGN_CENTER, "%s", period_c);
+    
+    } else if (aliens[i].status == TERMINATED){
+      al_draw_text(font, al_map_rgba(255, 255, 255, 0),
+                    info_start_x + 174 + column, info_start_y + ypos,
+                    ALLEGRO_ALIGN_CENTER, "TERMINATED");
+    }else{
+      al_draw_text(font, al_map_rgba(255, 255, 255, 0),
+                    info_start_x + 174 + column, info_start_y + ypos,
+                    ALLEGRO_ALIGN_CENTER, "NOT INITIALIZED");
+    }
+
+
     // Check the row and create new column
     if (i == max_rows) {
       xcol = xcol + 1;
