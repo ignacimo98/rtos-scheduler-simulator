@@ -9,6 +9,8 @@
 #include "scheduler.h"
 #include "ui_helper.h"
 
+// TODO: x para terminar
+
 const real32 FPS = 60.0f;
 const int32 screen_width = 1200;
 const int32 screen_height = 800;
@@ -26,12 +28,14 @@ void button_action_switch_algorithm(algorithm *current_algorithm) {
     *current_algorithm = RMS;
 }
 
-void button_action_add(alien aliens[], int aliens_running, char period[], int time, char energy[]) {
-  // oh lord please do something
+void button_action_add(alien aliens[], int aliens_running, 
+                        char period[], int time, char energy[], char* maze, 
+                        int maze_height, int maze_width) {
+
   if (!aliens_running && !time) {
-    initialize_alien(&aliens[alien_amount], atoi(period), time, atoi(energy), RUNNING);
+    initialize_alien(&aliens[alien_amount], atoi(period), time, atoi(energy), RUNNING, maze, maze_height, maze_width);
   } else {
-    initialize_alien(&aliens[alien_amount], atoi(period), time+1, atoi(energy), RUNNING);
+    initialize_alien(&aliens[alien_amount], atoi(period), time+1, atoi(energy), RUNNING, maze, maze_height, maze_width);
   }
   alien_amount++;
 }
@@ -257,7 +261,8 @@ void show_aliens(alien aliens[], int maze_start_x, int maze_start_y,
 void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
                        int *click_wait, int *running, int *manual,
                        algorithm *current_algorithm,
-                       input_box *currently_selected, int time, alien aliens[], char period[], char energy[]) {
+                       input_box *currently_selected, int time, alien aliens[], char period[], char energy[],
+                       char* maze, int maze_height, int maze_width) {
   if (*click_wait == 0) {
     if (al_mouse_button_down(&mouse_state, 1)) {
       *click_wait = 1;
@@ -272,14 +277,16 @@ void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
           mouse_x <= toolbar.x_base + toolbar.button_width &&
           mouse_y <= toolbar.ycoord_switch + toolbar.button_height) {
         // printf("SWITCH Button pressed\n");
-        button_action_switch(manual);
+        if (!time && !*running)
+          button_action_switch(manual);
       }
       // Check Switch Algorithm Button:
       if (mouse_x >= toolbar.x_base && mouse_y >= toolbar.ycoord_switch_algo &&
           mouse_x <= toolbar.x_base + toolbar.button_width &&
           mouse_y <= toolbar.ycoord_switch_algo + toolbar.button_height) {
         // printf("SWITCH Button pressed\n");
-        button_action_switch_algorithm(current_algorithm);
+        if (!time && !*running)
+          button_action_switch_algorithm(current_algorithm);
       }
       // Check Energy Input Box:
       if (mouse_x >= toolbar.x_base && mouse_y >= toolbar.ycoord_input1 &&
@@ -300,7 +307,9 @@ void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
           mouse_x <= toolbar.x_base + toolbar.button_width &&
           mouse_y <= toolbar.ycoord_add + toolbar.button_height) {
         // printf("Add Button pressed\n");
-        button_action_add(aliens, *running, period, time, energy);
+        
+        if (!time || *manual)
+          button_action_add(aliens, *running, period, time, energy, maze, maze_height, maze_width);
       }
       // Check Start/Stop Button:
       if (mouse_x >= toolbar.x_base && mouse_y >= toolbar.ycoord_start &&
@@ -474,7 +483,7 @@ int main(int argc, char *argv[]) {
       //  Check the mouse state.
       al_get_mouse_state(&mouse_state);
       check_mouse_click(mouse_state, toolbar, &click_wait, &aliens_running,
-                        &manual, &current_algorithm, &currently_selected, time, aliens, period_text, energy_text);
+                        &manual, &current_algorithm, &currently_selected, time, aliens, period_text, energy_text, maze, maze_height, maze_width);
 
       if (redraw && al_is_event_queue_empty(event_queue)) {
         redraw = 0;
