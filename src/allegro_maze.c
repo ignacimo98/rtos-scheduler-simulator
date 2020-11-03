@@ -41,11 +41,16 @@ void button_action_start(int *aliens_running) {
   else
     *aliens_running = 1;
 }
-void button_action_restart() {
-  // cmon you too?
+void button_action_restart(alien aliens[], int *aliens_running, int *overflow, int *time) {
+  for (int i = 0; i < alien_amount; i++){
+    aliens[i].status = NOT_INITIALIZED;
+  }
+  alien_amount = 0;
+  *aliens_running = 0;
+  *overflow = 0;
+  *time = 0;
 }
 
-/* Display the maze. */
 void show_maze(const char *maze, int width, int height, int maze_start_x,
                int maze_start_y, int square_side) {
   int x, y;
@@ -275,16 +280,15 @@ void show_overflow(ALLEGRO_FONT *font, int overflow){
 }
 
 void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
-                       int *click_wait, int *running, int *manual,
-                       algorithm *current_algorithm,
-                       input_box *currently_selected, int time, alien aliens[], char period[], char energy[]) {
+                       int *click_wait, int *running, int *manual, int *overflow,
+                       algorithm *current_algorithm, input_box *currently_selected, 
+                       int *time, alien aliens[], char period[], char energy[]) {
   if (*click_wait == 0) {
     if (al_mouse_button_down(&mouse_state, 1)) {
       *click_wait = 1;
       //  Mouse Clicked.
       int mouse_x = mouse_state.x;
       int mouse_y = mouse_state.y;
-      // printf("mouse in %d\n",mouse_x);
 
       //_____ Check if a button had been clicked: ____
       // Check Switch Mode Button:
@@ -320,7 +324,7 @@ void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
           mouse_x <= toolbar.x_base + toolbar.button_width &&
           mouse_y <= toolbar.ycoord_add + toolbar.button_height) {
         // printf("Add Button pressed\n");
-        button_action_add(aliens, *running, period, time, energy);
+        button_action_add(aliens, *running, period, *time, energy);
       }
       // Check Start/Stop Button:
       if (mouse_x >= toolbar.x_base && mouse_y >= toolbar.ycoord_start &&
@@ -332,9 +336,8 @@ void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
       // Check Reset Button:
       if (mouse_x >= toolbar.x_base && mouse_y >= toolbar.ycoord_reset &&
           mouse_x <= toolbar.x_base + toolbar.button_width &&
-          mouse_y <= toolbar.ycoord_reset + toolbar.button_height - 20) {
-        // printf("Restart Button pressed\n");
-        button_action_restart();
+          mouse_y <= toolbar.ycoord_reset + toolbar.button_height) {
+          button_action_restart(aliens, running ,overflow, time);
       }
     }
   } else {
@@ -504,7 +507,8 @@ int main(int argc, char *argv[]) {
       //  Check the mouse state.
       al_get_mouse_state(&mouse_state);
       check_mouse_click(mouse_state, toolbar, &click_wait, &aliens_running,
-                        &manual, &current_algorithm, &currently_selected, time, aliens, period_text, energy_text);
+                        &manual, &overflow, &current_algorithm, &currently_selected, 
+                        &time, aliens, period_text, energy_text);
 
       if (redraw && al_is_event_queue_empty(event_queue)) {
         redraw = 0;
