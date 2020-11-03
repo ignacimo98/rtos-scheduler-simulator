@@ -302,7 +302,7 @@ void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
           mouse_x <= toolbar.x_base + toolbar.button_width &&
           mouse_y <= toolbar.ycoord_switch + toolbar.button_height) {
         // printf("SWITCH Button pressed\n");
-        if (!time && !*running)
+        if (!*time)
           button_action_switch(manual);
       }
       // Check Switch Algorithm Button:
@@ -310,7 +310,7 @@ void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
           mouse_x <= toolbar.x_base + toolbar.button_width &&
           mouse_y <= toolbar.ycoord_switch_algo + toolbar.button_height) {
         // printf("SWITCH Button pressed\n");
-        if (!time && !*running)
+        if (!*time)
           button_action_switch_algorithm(current_algorithm);
       }
       // Check Energy Input Box:
