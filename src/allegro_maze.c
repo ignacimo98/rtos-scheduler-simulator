@@ -359,13 +359,17 @@ void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
 }
 
 void handle_keyboard_press(ALLEGRO_EVENT event, input_box currently_selected,
-                           char *energy_text, char *period_text) {
+                           char *energy_text, char *period_text, int *running) {
   if (event.type == ALLEGRO_EVENT_KEY_CHAR) {
     int newkey = event.keyboard.unichar;
     char ASCII = newkey & 0xff;
     printf("Just received: %c\n", ASCII);
     char scancode = event.keyboard.keycode;
-    if (scancode == ALLEGRO_KEY_BACKSPACE) {
+    if ((int)ASCII == 120 ){
+      //End program
+      *running = 0;
+      printf("Terminar programa\n");
+    } else if (scancode == ALLEGRO_KEY_BACKSPACE) {
       if (currently_selected == ENERGY) {
         if (strlen(energy_text) > 0)
           energy_text[strlen(energy_text) - 1] = '\0';
@@ -508,7 +512,7 @@ int main(int argc, char *argv[]) {
           // case ALLEGRO_EVENT_KEY_DOWN:
           {
             handle_keyboard_press(event, currently_selected, energy_text,
-                                  period_text);
+                                  period_text, &running);
           }
           break;
         default:
@@ -552,6 +556,8 @@ int main(int argc, char *argv[]) {
         al_flip_display();
       }
     }
+
+    //Close file!
 
     // al_destroy_font(font);
     al_destroy_timer(timer);
