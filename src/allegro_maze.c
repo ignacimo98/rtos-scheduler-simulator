@@ -366,7 +366,7 @@ void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
           mouse_y <= toolbar.ycoord_add + toolbar.button_height) {
         // printf("Add Button pressed\n");
 
-        if (!time || *manual)
+        if (!*time || *manual)
           button_action_add(aliens, *running, period, *time, energy, maze, maze_height, maze_width, file_info);
 
       }
@@ -444,7 +444,6 @@ int execute_step(alien aliens[],FILE *file_timeline, int time, const char *maze,
   }
 
   //Write to file
-  printf("guardado numero: %d\n",alien_number);
   fwrite(&alien_number, sizeof(alien_number), 1, file_timeline);
 
   //State: 1 -> success, -1 -> Stop program
