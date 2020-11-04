@@ -21,7 +21,7 @@ int deadline_check(alien aliens[], int alien_amount, int time){
   return overflow;
 }
 
-alien* schedule_alien(alien aliens[], int alien_amount, algorithm algorithm) {
+alien* schedule_alien(alien aliens[], int alien_amount, int *alien_number, algorithm algorithm) {
   alien* to_schedule = NULL;
   
   //Check for deadlines
@@ -30,6 +30,7 @@ alien* schedule_alien(alien aliens[], int alien_amount, algorithm algorithm) {
   for (; i < alien_amount; ++i) {
     if (aliens[i].remaining_energy > 0) {
       to_schedule = &(aliens[i]);
+      *alien_number = i+1;
       break;
     }
   }
@@ -40,6 +41,7 @@ alien* schedule_alien(alien aliens[], int alien_amount, algorithm algorithm) {
     for (; i < alien_amount; i++) {
       if (aliens[i].period < to_schedule->period && aliens[i].remaining_energy > 0){
         to_schedule = &(aliens[i]);
+        *alien_number = i+1;
       }
     }
   } else {
@@ -47,6 +49,7 @@ alien* schedule_alien(alien aliens[], int alien_amount, algorithm algorithm) {
     for (; i < alien_amount; i++) {
       if (aliens[i].next_deadline < to_schedule->next_deadline && aliens[i].remaining_energy > 0){
         to_schedule = &(aliens[i]);
+        *alien_number = i+1;
       }
     }
   }

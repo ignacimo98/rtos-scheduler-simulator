@@ -3,3 +3,5 @@ bin
 obj
 .DS_Store
 .vscode
+*.bin
+BORRAR.c
