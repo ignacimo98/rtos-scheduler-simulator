@@ -9,8 +9,6 @@
 #include "scheduler.h"
 #include "ui_helper.h"
 
-// TODO: x para terminar
-
 const real32 FPS = 60.0f;
 const int32 screen_width = 1200;
 const int32 screen_height = 800;
@@ -30,13 +28,32 @@ void button_action_switch_algorithm(algorithm *current_algorithm) {
 
 void button_action_add(alien aliens[], int aliens_running, 
                         char period[], int time, char energy[], char* maze, 
-                        int maze_height, int maze_width) {
+                        int maze_height, int maze_width, FILE *file_info) {
 
+  int period_int = atoi(period);
+  int energy_int = atoi(energy);
   if (!aliens_running && !time) {
-    initialize_alien(&aliens[alien_amount], atoi(period), time, atoi(energy), RUNNING, maze, maze_height, maze_width);
+    initialize_alien(&aliens[alien_amount], period_int, time, energy_int, RUNNING, maze, maze_height, maze_width);
   } else {
-    initialize_alien(&aliens[alien_amount], atoi(period), time+1, atoi(energy), RUNNING, maze, maze_height, maze_width);
+    initialize_alien(&aliens[alien_amount], period_int, time+1, energy_int, RUNNING, maze, maze_height, maze_width);
   }
+
+  // Convert float RGB to int
+  int r = aliens[alien_amount].r * 255.0F;
+  int g = aliens[alien_amount].g * 255.0F;
+  int b = aliens[alien_amount].b * 255.0F;
+  
+  time = aliens[alien_amount].creation_time;
+
+  // Add new alien info to info file
+  fwrite(&time,sizeof(time),1,file_info);
+  fwrite(&period_int,sizeof(period_int),1,file_info);
+  fwrite(&energy_int,sizeof(energy_int),1,file_info);
+  fwrite(&r,sizeof(r),1,file_info);
+  fwrite(&g,sizeof(g),1,file_info);
+  fwrite(&b,sizeof(b),1,file_info);
+  
+  // Alien counter +1
   alien_amount++;
 }
 void button_action_start(int *aliens_running) {
@@ -45,7 +62,8 @@ void button_action_start(int *aliens_running) {
   else
     *aliens_running = 1;
 }
-void button_action_restart(alien aliens[], int *aliens_running, int *overflow, int *time) {
+void button_action_restart(alien aliens[], int *aliens_running, int *overflow, 
+                          int *time, FILE *file_timeline, FILE *file_info) {
   for (int i = 0; i < alien_amount; i++){
     aliens[i].status = NOT_INITIALIZED;
   }
@@ -53,6 +71,21 @@ void button_action_restart(alien aliens[], int *aliens_running, int *overflow, i
   *aliens_running = 0;
   *overflow = 0;
   *time = 0;
+
+  fclose(file_info);
+  fclose(file_timeline);
+
+  file_timeline = fopen("timeline.bin","wb");
+  if(file_timeline == NULL) {
+        printf("Error creating file_timeline!\n");
+        abort();
+    }
+  file_info = fopen("aliensinfo.bin","wb");
+  if(file_info == NULL) {
+        printf("Error creating file_info!\n");
+        abort();
+    }
+
 }
 
 void show_maze(const char *maze, int width, int height, int maze_start_x,
@@ -287,7 +320,7 @@ void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
                        int *click_wait, int *running, int *manual, int *overflow,
                        algorithm *current_algorithm,
                        input_box *currently_selected, int *time, alien aliens[], char period[], char energy[],
-                       char* maze, int maze_height, int maze_width) {
+                       char* maze, int maze_height, int maze_width,FILE *file_timeline, FILE *file_info) {
 
   if (*click_wait == 0) {
     if (al_mouse_button_down(&mouse_state, 1)) {
@@ -333,8 +366,8 @@ void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
           mouse_y <= toolbar.ycoord_add + toolbar.button_height) {
         // printf("Add Button pressed\n");
 
-        if (!time || *manual)
-          button_action_add(aliens, *running, period, *time, energy, maze, maze_height, maze_width);
+        if (!*time || *manual)
+          button_action_add(aliens, *running, period, *time, energy, maze, maze_height, maze_width, file_info);
 
       }
       // Check Start/Stop Button:
@@ -348,7 +381,7 @@ void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
       if (mouse_x >= toolbar.x_base && mouse_y >= toolbar.ycoord_reset &&
           mouse_x <= toolbar.x_base + toolbar.button_width &&
           mouse_y <= toolbar.ycoord_reset + toolbar.button_height) {
-          button_action_restart(aliens, running ,overflow, time);
+          button_action_restart(aliens, running ,overflow, time, file_timeline, file_info);
       }
     }
   } else {
@@ -359,13 +392,16 @@ void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
 }
 
 void handle_keyboard_press(ALLEGRO_EVENT event, input_box currently_selected,
-                           char *energy_text, char *period_text) {
+                           char *energy_text, char *period_text, int *running) {
   if (event.type == ALLEGRO_EVENT_KEY_CHAR) {
     int newkey = event.keyboard.unichar;
     char ASCII = newkey & 0xff;
-    printf("Just received: %c\n", ASCII);
+    //printf("Just received: %c\n", ASCII);
     char scancode = event.keyboard.keycode;
-    if (scancode == ALLEGRO_KEY_BACKSPACE) {
+    if ((int)ASCII == 120 ){
+      //End program
+      *running = 0;
+    } else if (scancode == ALLEGRO_KEY_BACKSPACE) {
       if (currently_selected == ENERGY) {
         if (strlen(energy_text) > 0)
           energy_text[strlen(energy_text) - 1] = '\0';
@@ -384,9 +420,10 @@ void handle_keyboard_press(ALLEGRO_EVENT event, input_box currently_selected,
 }
 
 
-int execute_step(alien aliens[],int time, const char *maze, int maze_width,
+int execute_step(alien aliens[],FILE *file_timeline, int time, const char *maze, int maze_width,
                   int maze_height, algorithm current_algorithm) {
-  int state = 1; 
+  int state = 1;
+  int alien_number = 0; 
   // Check for deadlines, overflow and restore energy (1 = overflow)
   int scheduler_overflow = deadline_check(aliens, alien_amount, time);
 
@@ -396,7 +433,7 @@ int execute_step(alien aliens[],int time, const char *maze, int maze_width,
   } else {
     // Find alien to move
     alien *current_alien =
-        schedule_alien(aliens, alien_amount, current_algorithm);
+        schedule_alien(aliens, alien_amount, &alien_number, current_algorithm);
 
     if (current_alien != NULL) {
       directions available_directions = get_available_directions(
@@ -405,6 +442,10 @@ int execute_step(alien aliens[],int time, const char *maze, int maze_width,
       current_alien->remaining_energy--;
     }
   }
+
+  //Write to file
+  fwrite(&alien_number, sizeof(alien_number), 1, file_timeline);
+
   //State: 1 -> success, -1 -> Stop program
   return state;
 }
@@ -443,6 +484,21 @@ int main(int argc, char *argv[]) {
   info_space = 20;
   char energy_text[16] = "";
   char period_text[16] = "";
+  FILE *file_timeline;
+  FILE *file_info;
+
+  // Open the bin file
+  file_timeline = fopen("timeline.bin","wb");
+  if(file_timeline == NULL) {
+        printf("Error creating file_timeline!\n");
+        return -1;
+    }
+  file_info = fopen("aliensinfo.bin","wb");
+  if(file_info == NULL) {
+        printf("Error creating file_info!\n");
+        return -1;
+    }
+
   //  Allocate the maze array.
   maze = (char *)malloc(maze_width * maze_height * sizeof(char));
   if (maze == NULL) {
@@ -494,7 +550,7 @@ int main(int argc, char *argv[]) {
             if (frames >= 30) {
               frames = 0;
 
-              if (execute_step(aliens, time, maze, maze_width, maze_height, current_algorithm) != 1){
+              if (execute_step(aliens, file_timeline, time, maze, maze_width, maze_height, current_algorithm) != 1){
                 //Overflow detected
                 aliens_running = 0;
                 overflow = 1;
@@ -508,7 +564,7 @@ int main(int argc, char *argv[]) {
           // case ALLEGRO_EVENT_KEY_DOWN:
           {
             handle_keyboard_press(event, currently_selected, energy_text,
-                                  period_text);
+                                  period_text, &running);
           }
           break;
         default:
@@ -518,7 +574,7 @@ int main(int argc, char *argv[]) {
       //  Check the mouse state.
       al_get_mouse_state(&mouse_state);
       check_mouse_click(mouse_state, toolbar, &click_wait, &aliens_running,
-      &manual, &overflow, &current_algorithm, &currently_selected, &time, aliens, period_text, energy_text, maze, maze_height, maze_width);
+      &manual, &overflow, &current_algorithm, &currently_selected, &time, aliens, period_text, energy_text, maze, maze_height, maze_width, file_timeline, file_info);
 
 
       if (redraw && al_is_event_queue_empty(event_queue)) {
@@ -552,6 +608,10 @@ int main(int argc, char *argv[]) {
         al_flip_display();
       }
     }
+
+    //Close file!
+    fclose(file_timeline);
+    fclose(file_info);
 
     // al_destroy_font(font);
     al_destroy_timer(timer);

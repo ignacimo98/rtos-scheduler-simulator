@@ -5,6 +5,6 @@
 
 typedef enum algorithm { RMS, EDF } algorithm;
 int deadline_check(alien aliens[], int alien_amount, int time);
-alien* schedule_alien(alien aliens[], int alien_amount, algorithm algorithm);
+alien* schedule_alien(alien aliens[], int alien_amount, int *alien_number, algorithm algorithm);
 
 #endif //SCHEDULER_H_
