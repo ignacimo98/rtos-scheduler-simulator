@@ -616,7 +616,8 @@ int main(int argc, char *argv[]) {
     fclose(file_timeline);
     fclose(file_info);
 
-    system("python3 reporte.py");
+    if (time > 0)
+      system("python3 reporte.py");
 
     // al_destroy_font(font);
     al_destroy_timer(timer);
@@ -624,7 +625,7 @@ int main(int argc, char *argv[]) {
     al_destroy_event_queue(event_queue);
 
   } else {
-    printf("Allegro initialization failed")
+    printf("Allegro initialization failed");
   }
 
   return 0;
