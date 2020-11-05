@@ -176,7 +176,7 @@ void show_toolbar(toolbar_info toolbar, ALLEGRO_FONT *font, int maze_width,
 
   //_____________DRAW START/STOP BUTTON
   if (aliens_running) {
-    draw_button(font, al_map_rgba(247, 7, 30, 255), "STOP", toolbar.x_base,
+    draw_button(font, al_map_rgba(247, 7, 30, 255), "PAUSE", toolbar.x_base,
                 toolbar.ycoord_start, toolbar.button_width,
                 toolbar.button_height);
   } else {
@@ -624,7 +624,7 @@ int main(int argc, char *argv[]) {
     al_destroy_event_queue(event_queue);
 
   } else {
-    // TODO log allegro initialization failed
+    printf("Allegro initialization failed")
   }
 
   return 0;
