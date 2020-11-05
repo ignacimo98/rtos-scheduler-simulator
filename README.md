@@ -22,11 +22,11 @@
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
-[![Contributors][contributors-shield]][contributors-url]
+<!-- [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
+[![MIT License][license-shield]][license-url] -->
 <!-- [![LinkedIn][linkedin-shield]][linkedin-url] -->
 
 
@@ -42,15 +42,15 @@
 
   <p align="center">
     <!-- YOUR_SHORT_DESCRIPTION -->
-    <br />
-    <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/github_username/repo_name">View Demo</a>
+    <!-- <br /> -->
+    <!-- <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
+    <br /> -->
+    <!-- <br /> -->
+    <a href="https://github.com/ignacimo98/rtos-scheduler-simulator">View Project</a>
     ·
-    <a href="https://github.com/github_username/repo_name/issues">Report Bug</a>
+    <a href="https://github.com/ignacimo98/rtos-scheduler-simulator/issues">Report Bug</a>
     ·
-    <a href="https://github.com/github_username/repo_name/issues">Request Feature</a>
+    <a href="https://github.com/ignacimo98/rtos-scheduler-simulator/issues">Request Feature</a>
   </p>
 </p>
 
@@ -63,20 +63,17 @@
   * [Built With](#built-with)
 * [Getting Started](#getting-started)
   * [Prerequisites](#prerequisites)
-  * [Installation](#installation)
+  * [Compilation](#compilation)
 * [Usage](#usage)
-* [Roadmap](#roadmap)
-* [Contributing](#contributing)
-* [License](#license)
 * [Contact](#contact)
-* [Acknowledgements](#acknowledgements)
+
 
 
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+<!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
 
 <!-- Here's a blank template to get started:
 **To avoid retyping too much info. Do a search and replace with your text editor for the following:**
@@ -89,10 +86,10 @@ This is a RTOS scheduler simulation, with each periodic process modeled as an al
 
 ### Built With
 
-* [C]()
-* [Allegro]()
-* [Python]()
-* [Tkinter]()
+* C: Standard _gnu17_
+* Allegro
+* Python: Version >3.5
+* Tkinter
 
 
 
@@ -110,15 +107,19 @@ In order to compile and run the project, the following dependencies are needed.
 * make
 * python
 
-### Installation
+### Compilation
 
 1. Clone the repo
 ```sh
-git clone https://github.com/github_username/repo_name.git
+git clone https://github.com/ignacimo98/rtos-scheduler-simulator.git
 ```
-2. Install NPM packages
+2. Change directory to the project's base directory
 ```sh
-npm install
+cd rtos-scheduler-simulator
+```
+3. Compile the project
+```sh
+make
 ```
 
 
@@ -129,18 +130,22 @@ npm install
 <!-- Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
 _For more examples, please refer to the [Documentation](https://example.com)_ -->
+In order to run the project, make sure you're still on the project's base directory and execute it.
+```sh
+./bin/maze
+```
 
 
 
 <!-- ROADMAP -->
-## Roadmap
+<!-- ## Roadmap -->
 
 <!-- See the [open issues](https://github.com/github_username/repo_name/issues) for a list of proposed features (and known issues). -->
 
 
 
 <!-- CONTRIBUTING -->
-## Contributing
+<!-- ## Contributing -->
 
 <!-- Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
@@ -153,28 +158,29 @@ _For more examples, please refer to the [Documentation](https://example.com)_ --
 
 
 <!-- LICENSE -->
-## License
+<!-- ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. See `LICENSE` for more information. -->
 
 
 
 <!-- CONTACT -->
 ## Contact
-<!-- 
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email
+
+* Ignacio Mora - [@nachomora_](https://twitter.com/nachomora_) - ignacimo98@gmail.com
+* Daniel Castro - [@danicast_c](https://twitter.com/danicast_c) - danielsony1311@gmail.com
 
 Project Link: [https://github.com/ignacimo98/rtos-scheduler-simulator](https://github.com/ignacimo98/rtos-scheduler-simulator)
- -->
+
 
 
 <!-- ACKNOWLEDGEMENTS -->
-## Acknowledgements
+<!-- ## Acknowledgements
 
 * []()
 * []()
 * []()
-
+ -->
 
 
 
