@@ -28,18 +28,17 @@ alien* schedule_alien(alien aliens[], int alien_amount, int *alien_number, algor
   
   int i = 0;
   for (; i < alien_amount; ++i) {
-    if (aliens[i].remaining_energy > 0) {
+    if (aliens[i].remaining_energy > 0 && aliens[i].status == RUNNING) {
       to_schedule = &(aliens[i]);
       *alien_number = i+1;
       break;
     }
   }
 
-  // TODO: Calendarizar la mica
   if (algorithm == RMS) {
     // ___________ RMS Scheduler __________
     for (; i < alien_amount; i++) {
-      if (aliens[i].period < to_schedule->period && aliens[i].remaining_energy > 0){
+      if (aliens[i].period < to_schedule->period && aliens[i].remaining_energy > 0 && aliens[i].status == RUNNING){
         to_schedule = &(aliens[i]);
         *alien_number = i+1;
       }
@@ -47,7 +46,7 @@ alien* schedule_alien(alien aliens[], int alien_amount, int *alien_number, algor
   } else {
     // ___________ EDF Scheduler __________
     for (; i < alien_amount; i++) {
-      if (aliens[i].next_deadline < to_schedule->next_deadline && aliens[i].remaining_energy > 0){
+      if (aliens[i].next_deadline < to_schedule->next_deadline && aliens[i].remaining_energy > 0 && aliens[i].status == RUNNING){
         to_schedule = &(aliens[i]);
         *alien_number = i+1;
       }

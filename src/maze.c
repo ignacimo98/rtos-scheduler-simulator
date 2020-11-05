@@ -69,15 +69,18 @@ void GenerateMaze(char *maze, int width, int height) {
   // maze[0 * width + 1] = 0;
   maze[(height - 1) * width + (width - 2)] = 0;
 }
-directions get_available_directions(const char *maze, int width, int height, int x,
-                                    int y) {
+directions get_available_directions(char *maze, int width, int height, int x,
+                                    int y, alien aliens[], int alien_amount) {
   directions result;
-  // TODO: que no haya dirección disponible si hay alien
 
+  alienate_maze(aliens, alien_amount, maze, width);
+  
   result.up = !maze[(y - 1) * width + x];
   result.down = !maze[(y + 1) * width + x];
   result.left = !maze[y * width + x - 1];
   result.right = !maze[y * width + x + 1];
+  dealienate_maze(aliens, alien_amount, maze, width);
+
 
   return result;
 }

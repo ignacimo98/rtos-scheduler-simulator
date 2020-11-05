@@ -1,5 +1,5 @@
 class Alien:
-  def __init__(self, id, creacion, energia, periodo, r, g, b):
+  def __init__(self, id, creacion, periodo, energia, r, g, b):
     self.id = id
     self.creacion = creacion
     self.energia = energia
@@ -9,6 +9,6 @@ class Alien:
     self.b = b
 
   def recent_deadline(self, time):
-    if (time - self.creacion)%self.periodo<self.energia:
+    if time>=self.creacion and (time - self.creacion)%self.periodo<self.energia:
       return True
     return False

@@ -35,7 +35,7 @@ void button_action_add(alien aliens[], int aliens_running,
   if (!aliens_running && !time) {
     initialize_alien(&aliens[alien_amount], period_int, time, energy_int, RUNNING, maze, maze_height, maze_width);
   } else {
-    initialize_alien(&aliens[alien_amount], period_int, time+1, energy_int, RUNNING, maze, maze_height, maze_width);
+    initialize_alien(&aliens[alien_amount], period_int, time, energy_int, RUNNING, maze, maze_height, maze_width);
   }
 
   // Convert float RGB to int
@@ -366,9 +366,12 @@ void check_mouse_click(ALLEGRO_MOUSE_STATE mouse_state, toolbar_info toolbar,
           mouse_y <= toolbar.ycoord_add + toolbar.button_height) {
         // printf("Add Button pressed\n");
 
-        if (!*time || *manual)
-          button_action_add(aliens, *running, period, *time, energy, maze, maze_height, maze_width, file_info);
-
+        if (!*time || *manual){
+          alienate_maze(aliens, alien_amount, maze, maze_width);
+          button_action_add(aliens, *running, period, *time, energy, maze,
+                            maze_height, maze_width, file_info);
+          dealienate_maze(aliens, alien_amount, maze, maze_width);
+        }
       }
       // Check Start/Stop Button:
       if (mouse_x >= toolbar.x_base && mouse_y >= toolbar.ycoord_start &&
@@ -420,7 +423,7 @@ void handle_keyboard_press(ALLEGRO_EVENT event, input_box currently_selected,
 }
 
 
-int execute_step(alien aliens[],FILE *file_timeline, int time, const char *maze, int maze_width,
+int execute_step(alien aliens[],FILE *file_timeline, int time, char *maze, int maze_width,
                   int maze_height, algorithm current_algorithm) {
   int state = 1;
   int alien_number = 0; 
@@ -437,8 +440,8 @@ int execute_step(alien aliens[],FILE *file_timeline, int time, const char *maze,
 
     if (current_alien != NULL) {
       directions available_directions = get_available_directions(
-          maze, maze_width, maze_height, current_alien->x, current_alien->y);
-      move_alien(current_alien, available_directions);
+          maze, maze_width, maze_height, current_alien->x, current_alien->y, aliens, alien_amount);
+      move_alien(current_alien, available_directions, maze_width, maze_height);
       current_alien->remaining_energy--;
     }
   }
@@ -612,6 +615,8 @@ int main(int argc, char *argv[]) {
     //Close file!
     fclose(file_timeline);
     fclose(file_info);
+
+    system("python3 reporte.py");
 
     // al_destroy_font(font);
     al_destroy_timer(timer);
