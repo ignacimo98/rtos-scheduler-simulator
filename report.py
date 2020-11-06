@@ -1,9 +1,12 @@
 import tkinter as tk
 from alien import Alien
 import struct
+import sys
+
+
 
 aliens = []
-with open("/Users/nachomora/Desktop/PSO/Proyecto 1/aliensinfo.bin", "rb") as f:
+with open(sys.argv[1]+"/aliensinfo.bin", "rb") as f:
 
     bin_int = f.read(4)
     alien_info = []
@@ -21,7 +24,7 @@ with open("/Users/nachomora/Desktop/PSO/Proyecto 1/aliensinfo.bin", "rb") as f:
 
 timeline = []
 
-with open("/Users/nachomora/Desktop/PSO/Proyecto 1/timeline.bin", "rb") as f:
+with open(sys.argv[1]+"/timeline.bin", "rb") as f:
 
     bin_int = f.read(4)
 
@@ -65,6 +68,7 @@ top = tk.Tk()
 
 top.minsize(window_width, window_height)
 top.resizable(width=tk.NO, height=tk.NO)
+top.title("Scheduling report - " +sys.argv[2])
 
 
 frame = tk.Frame(top, bg = "#FAFAFA")
