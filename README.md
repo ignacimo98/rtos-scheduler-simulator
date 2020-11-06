@@ -65,6 +65,7 @@
   * [Prerequisites](#prerequisites)
   * [Compilation](#compilation)
 * [Usage](#usage)
+* [License](#license)
 * [Contact](#contact)
 
 
@@ -158,9 +159,9 @@ In order to run the project, make sure you're still on the project's base direct
 
 
 <!-- LICENSE -->
-<!-- ## License
+## License
 
-Distributed under the MIT License. See `LICENSE` for more information. -->
+Distributed under the GNU GPLv3 License. See `LICENSE` for more information.
 
 
 
