@@ -12,7 +12,8 @@ CFLAGS   := -Wall -g
 LDFLAGS  := -Llib
 LDLIBS   := -lallegro -lallegro_primitives -lallegro_main -lallegro_font -lallegro_ttf
 
-.PHONY: all clean
+.PHONY: all clean run
+
 
 all: $(EXE)
 
@@ -28,5 +29,9 @@ $(BIN_DIR) $(OBJ_DIR):
 clean:
 		@$(RM) -rv $(BIN_DIR) $(OBJ_DIR)
 
+run: all
+		./$(EXE)
+
 -include $(OBJ:.o=.d)
+
 
